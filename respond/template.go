@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	internal "github.com/Jille/convreq/internal"
+	"github.com/Jille/convreq/internal"
 )
 
 // TemplateProducer is a function that returns a template (like) object.

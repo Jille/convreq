@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	internal "github.com/Jille/convreq/internal"
+	"github.com/Jille/convreq/internal"
 )
 
 type httpError struct {

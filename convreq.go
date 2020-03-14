@@ -2,7 +2,7 @@
 package convreq
 
 import (
-	internal "github.com/Jille/convreq/internal"
+	"github.com/Jille/convreq/internal"
 )
 
 // HttpResponse is what is to be returned from request handlers.

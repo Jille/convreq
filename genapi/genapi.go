@@ -6,7 +6,7 @@ import (
 	"log"
 	"runtime/debug"
 
-	internal "github.com/Jille/convreq/internal"
+	"github.com/Jille/convreq/internal"
 	"github.com/Jille/convreq/respond"
 )
 

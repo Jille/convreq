@@ -1,4 +1,4 @@
-package convreq
+package internal
 
 import (
 	"fmt"

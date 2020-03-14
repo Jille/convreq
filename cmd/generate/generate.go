@@ -55,7 +55,7 @@ func generate(w io.Writer, handlers []handler) {
 	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, "\t%q\n", "github.com/Jille/convreq")
 	fmt.Fprintf(w, "\t%q\n", "github.com/Jille/convreq/genapi")
-	fmt.Fprintf(w, "\tinternal %q\n", "github.com/Jille/convreq/internal")
+	fmt.Fprintf(w, "\t%q\n", "github.com/Jille/convreq/internal")
 	fmt.Fprintf(w, "\t%q\n", "github.com/Jille/convreq/respond")
 	fmt.Fprintf(w, "\t%q\n", "github.com/gorilla/mux")
 	fmt.Fprintf(w, ")\n")
