@@ -24,11 +24,44 @@ var handlerMap = map[reflect.Type]reflect.Value{
 	reflect.TypeOf((*HttpResponse)(nil)).Elem(): reflect.ValueOf(internal.DoRespond),
 }
 
+type wrapOptions struct{
+	extractors map[reflect.Type]extractor
+	handlers map[reflect.Type]reflect.Value
+}
+
+type WrapOption func(wo *wrapOptions)
+
+func WithParameterType(t reflect.Type, e extractor) WrapOption {
+	return func(wo *wrapOptions) {
+		wo.extractors[t] = e
+	}
+}
+
+func WithReturnType(t reflect.Type, f reflect.Value) WrapOption {
+	return func(wo *wrapOptions) {
+		wo.handlers[t] = f
+	}
+}
+
 // Wrap takes a request handler function and returns a http.HandlerFunc for use with net/http.
 // The requested handler is expected to take arguments like context.Context, *http.Request and return a convreq.HttpResponse or an error.
-func Wrap(f interface{}) http.HandlerFunc {
+func Wrap(f interface{}, opts ...WrapOption) http.HandlerFunc {
 	t := reflect.TypeOf(f)
 	v := reflect.ValueOf(f)
+
+	wo := wrapOptions{
+		extractors: map[reflect.Type]extractor{},
+		handlers: map[reflect.Type]reflect.Value{},
+	}
+	for t, e := range extractorMap {
+		wo.extractors[t] = e
+	}
+	for t, f := range handlerMap {
+		wo.handlers[t] = f
+	}
+	for _, o := range opts {
+		o(&wo)
+	}
 
 	if t.Kind() != reflect.Func {
 		panic(fmt.Errorf("convreq: %s: not a function", v.String()))
@@ -37,12 +70,12 @@ func Wrap(f interface{}) http.HandlerFunc {
 	// Look up all input parameters, and look up how we can create that type based.
 	ins := make([]extractor, t.NumIn())
 	for i := 0; t.NumIn() > i; i++ {
-		if strings.HasSuffix(t.In(i).Name(), "Get") {
+		if e, ok := wo.extractors[t.In(i)]; ok {
+			ins[i] = e
+		} else if strings.HasSuffix(t.In(i).Name(), "Get") {
 			ins[i] = createGet(t.In(i))
 		} else if t.In(i).Kind() == reflect.Ptr && strings.HasSuffix(t.In(i).Elem().Name(), "Post") {
 			ins[i] = createPost(t.In(i))
-		} else {
-			ins[i] = extractorMap[t.In(i)]
 		}
 		if ins[i] == nil {
 			panic(fmt.Errorf("convreq: %s: don't know how to produce %s", v.String(), t.In(i).String()))
@@ -58,7 +91,7 @@ func Wrap(f interface{}) http.HandlerFunc {
 	case 0:
 		handler = reflect.ValueOf(handleVoid)
 	case 1:
-		handler = handlerMap[t.Out(0)]
+		handler = wo.handlers[t.Out(0)]
 	}
 	if !handler.IsValid() {
 		panic(fmt.Errorf("convreq: %s: don't know how to handle return type(s)", v.String()))
