@@ -65,13 +65,14 @@ func (h withHeaders) Respond(w http.ResponseWriter, r *http.Request) error {
 	for k, v := range h.header {
 		w.Header()[k] = v
 	}
-	return nil
+	return h.parent.Respond(w, r)
 }
 
 // WithHeader wraps a response and adds an additional header to be set.
 func WithHeader(hr internal.HttpResponse, header, value string) internal.HttpResponse {
 	ret := withHeaders{
 		parent: hr,
+		header: http.Header{},
 	}
 	ret.header.Set(header, value)
 	return ret
