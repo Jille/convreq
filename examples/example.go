@@ -1,3 +1,4 @@
+//go:generate sh -c "go run ../cmd/generate/generate.go -- example.go > example_generated.go"
 package main
 
 import (
