@@ -51,9 +51,9 @@ func WithContextWrapper(f func(ctx context.Context) (context.Context, func())) W
 }
 
 // WithErrorHandler can be passed on Wrap() to set an ErrorHandler for requests.
-func WithErrorHandler(ctx context.Context, f ErrorHandler) WrapOption {
+func WithErrorHandler(f ErrorHandler) WrapOption {
 	return WithContextWrapper(func(ctx context.Context) (context.Context, func()) {
-		return context.WithValue(ctx, internal.ErrorHandlerContextKey, f), nil
+		return ContextWithErrorHandler(ctx, f), nil
 	})
 }
 
