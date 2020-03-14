@@ -1,3 +1,8 @@
+# convreq
+
+[![GoDoc](https://godoc.org/github.com/Jille/convreq?status.svg)](https://godoc.org/github.com/Jille/convreq)
+[![Build Status](https://travis-ci.org/Jille/convreq.png)](https://travis-ci.org/Jille/convreq)
+
 Experimental project to make writing webservers more convenient.
 
 The core principle of the library is that while the `func(w http.ResponseWriter, r *http.Request)` signature is very powerful, often a more convenient interface would be preferable.
