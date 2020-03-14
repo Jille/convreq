@@ -22,6 +22,14 @@ type HttpResponse interface {
 	Respond(w http.ResponseWriter, r *http.Request) error
 }
 
+type ctxKey int
+
+// ErrorHandlerContextKey is used to store an ErrorHandler in the context.
+var ErrorHandlerContextKey ctxKey = 1
+
+// ErrorHandler is a callback type that you can register with ContextWithErrorHandler or WithErrorHandler to have your own callback called to render errors.
+type ErrorHandler func(code int, msg string, r *http.Request) HttpResponse
+
 // DoRespond executes a HttpResponse and has it write to the ResponseWriter.
 func DoRespond(w http.ResponseWriter, r *http.Request, hr HttpResponse) {
 	if err := hr.Respond(w, r); err != nil {

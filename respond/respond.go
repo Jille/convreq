@@ -16,6 +16,9 @@ type httpError struct {
 
 // Respond implements convreq.HttpResponse.
 func (e httpError) Respond(w http.ResponseWriter, r *http.Request) error {
+	if f, ok := r.Context().Value(internal.ErrorHandlerContextKey).(internal.ErrorHandler); ok {
+		return f(e.code, e.msg, r).Respond(w, r)
+	}
 	http.Error(w, e.msg, e.code)
 	return nil
 }

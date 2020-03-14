@@ -50,6 +50,13 @@ func WithContextWrapper(f func(ctx context.Context) (context.Context, func())) W
 	}
 }
 
+// WithErrorHandler can be passed on Wrap() to set an ErrorHandler for requests.
+func WithErrorHandler(ctx context.Context, f ErrorHandler) WrapOption {
+	return WithContextWrapper(func(ctx context.Context) (context.Context, func()) {
+		return context.WithValue(ctx, internal.ErrorHandlerContextKey, f), nil
+	})
+}
+
 // Wrap takes a request handler function and returns a http.HandlerFunc for use with net/http.
 // The requested handler is expected to take arguments like context.Context, *http.Request and return a convreq.HttpResponse or an error.
 func Wrap(f interface{}, opts ...WrapOption) http.HandlerFunc {
