@@ -2,7 +2,9 @@ package convreq_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"text/template"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -18,7 +20,7 @@ type ArticlesCategoryHandlerGet struct {
 }
 
 type ArticlesCategoryHandlerPost struct {
-	NewName string
+	NewName string `schema:"newname,required"`
 }
 
 func ArticlesCategoryHandler(ctx context.Context, r *http.Request, get ArticlesCategoryHandlerGet, post *ArticlesCategoryHandlerPost) convreq.HttpResponse {
@@ -33,10 +35,11 @@ func ArticlesCategoryHandler(ctx context.Context, r *http.Request, get ArticlesC
 
 func TestStuff(t *testing.T) {
 	tests := []struct {
-		req      *http.Request
-		handler  interface{}
-		wantCode int
-		wantBody string
+		req         *http.Request
+		handler     interface{}
+		wantCode    int
+		wantHeaders map[string]string
+		wantBody    string
 	}{
 		{
 			req:      httptest.NewRequest("GET", "/?category=unimplemented&id=1", nil),
@@ -56,6 +59,115 @@ func TestStuff(t *testing.T) {
 			wantCode: 200,
 			wantBody: "I like post. NewName=dude",
 		},
+		{
+			req:      httptest.NewRequest("POST", "/?category=test&id=not-a-number", strings.NewReader("newname=dude")),
+			handler:  ArticlesCategoryHandler,
+			wantCode: 400,
+			wantBody: "failed to parse url/query: schema: error converting value for \"id\"\n",
+		},
+		{
+			req:      httptest.NewRequest("POST", "/?category=test&id=7", strings.NewReader("newname=")),
+			handler:  ArticlesCategoryHandler,
+			wantCode: 400,
+			wantBody: "failed to parse form input: newname is empty\n",
+		},
+		{
+			// Test return value error.
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() error {
+				return errors.New("test")
+			},
+			wantCode: 500,
+			wantBody: "test\n",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			// Test no return value.
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				http.NotFoundHandler().ServeHTTP(w, r)
+			},
+			wantCode: 404,
+			wantBody: "404 page not found\n",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() convreq.HttpResponse {
+				return respond.BadRequest(errors.New("test"))
+			},
+			wantCode: 400,
+			wantBody: "test\n",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() convreq.HttpResponse {
+				return respond.PermissionDenied(errors.New("test"))
+			},
+			wantCode: 403,
+			wantBody: "test\n",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() convreq.HttpResponse {
+				return respond.NotFound(errors.New("test"))
+			},
+			wantCode: 404,
+			wantBody: "test\n",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() convreq.HttpResponse {
+				return respond.Handler(http.NotFoundHandler())
+			},
+			wantCode: 404,
+			wantBody: "404 page not found\n",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() convreq.HttpResponse {
+				return respond.OverrideResponseCode(respond.Handler(http.NotFoundHandler()), 406)
+			},
+			wantCode: 406,
+			wantBody: "404 page not found\n",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() convreq.HttpResponse {
+				return respond.Redirect(302, "/login/")
+			},
+			wantCode:    302,
+			wantHeaders: map[string]string{"Location": "/login/"},
+			wantBody:    "",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() convreq.HttpResponse {
+				return respond.WithHeader(respond.Handler(http.NotFoundHandler()), "A", "B")
+			},
+			wantCode:    404,
+			wantHeaders: map[string]string{"A": "B"},
+			wantBody:    "404 page not found\n",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() convreq.HttpResponse {
+				return respond.WithHeaders(respond.Handler(http.NotFoundHandler()), http.Header{"A": []string{"B"}, "C": []string{"D"}})
+			},
+			wantCode:    404,
+			wantHeaders: map[string]string{"A": "B", "C": "D"},
+			wantBody:    "404 page not found\n",
+		},
+		{
+			req: httptest.NewRequest("GET", "/", nil),
+			handler: func() convreq.HttpResponse {
+				t, err := template.New("test").Parse("{{.}} is a number")
+				if err != nil {
+					return respond.InternalServerError(err)
+				}
+				return respond.RenderTemplate(t, 7)
+			},
+			wantCode: 200,
+			wantBody: "7 is a number",
+		},
 	}
 
 	for _, tc := range tests {
@@ -68,6 +180,11 @@ func TestStuff(t *testing.T) {
 			handler.ServeHTTP(respRecorder, tc.req)
 			if respRecorder.Code != tc.wantCode {
 				t.Errorf("Request returned code %d (want %d)", respRecorder.Code, tc.wantCode)
+			}
+			for h, v := range tc.wantHeaders {
+				if respRecorder.Header().Get(h) != v {
+					t.Errorf("Request returned %q for header %q (want %q)", respRecorder.Header().Get(h), h, v)
+				}
 			}
 			body := respRecorder.Body.String()
 			if body != tc.wantBody {
