@@ -2,5 +2,6 @@ language: go
 
 script:
 - "[ `gofmt -l $(find -name '*.go') | wc -l` = 0 ]"
+- go run cmd/generate/generate.go -- examples/example.go > examples/example_generated.go
 - go build
 - go test
