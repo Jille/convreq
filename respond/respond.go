@@ -25,6 +25,11 @@ func BadRequest(err error) internal.HttpResponse {
 	return httpError{400, err.Error()}
 }
 
+// NotFound creates a HTTP 404 Not Found response.
+func NotFound(err error) internal.HttpResponse {
+	return httpError{404, err.Error()}
+}
+
 // InternalServerError creates a HTTP 500 Internal Server Error response.
 func InternalServerError(err error) internal.HttpResponse {
 	return httpError{500, err.Error()}
