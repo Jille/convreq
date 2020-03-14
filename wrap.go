@@ -27,6 +27,7 @@ var handlerMap = map[reflect.Type]reflect.Value{
 type wrapOptions struct{
 	extractors map[reflect.Type]extractor
 	handlers map[reflect.Type]reflect.Value
+	contextWrappers []func(ctx context.Context) (context.Context, func())
 }
 
 type WrapOption func(wo *wrapOptions)
@@ -40,6 +41,12 @@ func WithParameterType(t reflect.Type, e extractor) WrapOption {
 func WithReturnType(t reflect.Type, f reflect.Value) WrapOption {
 	return func(wo *wrapOptions) {
 		wo.handlers[t] = f
+	}
+}
+
+func WithContextWrapper(f func(ctx context.Context) (context.Context, func())) WrapOption {
+	return func(wo *wrapOptions) {
+		wo.contextWrappers = append(wo.contextWrappers, f)
 	}
 }
 
@@ -100,6 +107,17 @@ func Wrap(f interface{}, opts ...WrapOption) http.HandlerFunc {
 	// We've done all the prework we can. We try to minimize the things on the request path.
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		if len(wo.contextWrappers) > 0 {
+			ctx := r.Context()
+			var cancel func()
+			for _, cw := range wo.contextWrappers {
+				ctx, cancel = cw(ctx)
+				if cancel != nil {
+					defer cancel()
+				}
+			}
+			r = r.WithContext(ctx)
+		}
 		var hr HttpResponse
 		// Now that we're called, extract all input parameters from w and r.
 		in := make([]reflect.Value, len(ins))
