@@ -25,6 +25,11 @@ func BadRequest(err error) internal.HttpResponse {
 	return httpError{400, err.Error()}
 }
 
+// PermissionDenied creates a HTTP 403 Permission Denied response.
+func PermissionDenied(err error) internal.HttpResponse {
+	return httpError{403, err.Error()}
+}
+
 // NotFound creates a HTTP 404 Not Found response.
 func NotFound(err error) internal.HttpResponse {
 	return httpError{404, err.Error()}
