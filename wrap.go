@@ -11,14 +11,18 @@ import (
 	"github.com/Jille/convreq/respond"
 )
 
+// extractor is a function that extracts one specific type from a ResponseWriter or Request.
+// An example of an extractor is getContext, that retrieves the context from Request.
 type extractor func(w http.ResponseWriter, r *http.Request) (reflect.Value, HttpResponse)
 
 var extractorMap = map[reflect.Type]extractor{
+	// The best way to get a reflect.Type of an interface seems to be to get a pointer to it and dereference it.
 	reflect.TypeOf((*context.Context)(nil)).Elem():     getContext,
 	reflect.TypeOf(&http.Request{}):                    getRequest,
 	reflect.TypeOf((*http.ResponseWriter)(nil)).Elem(): getResponseWriter,
 }
 
+// handlers are function that can handle the return value from a request handler.
 var handlerMap = map[reflect.Type]reflect.Value{
 	reflect.TypeOf((*error)(nil)).Elem():        reflect.ValueOf(handleError),
 	reflect.TypeOf((*HttpResponse)(nil)).Elem(): reflect.ValueOf(internal.DoRespond),
@@ -30,20 +34,28 @@ type wrapOptions struct{
 	contextWrappers []func(ctx context.Context) (context.Context, func())
 }
 
+// WrapOption can be given to Wrap to modify behavior.
 type WrapOption func(wo *wrapOptions)
 
+// WithParameterType makes Wrap() understand an extra type for request handler signatures.
+// The extractor is a function that can derive the requested type from a ResponseWriter and Request.
 func WithParameterType(t reflect.Type, e extractor) WrapOption {
 	return func(wo *wrapOptions) {
 		wo.extractors[t] = e
 	}
 }
 
+// WithReturnType makes Wrap() understand an extra return type for request handler signatures.
+// You should pass in a function that takes `http.ResponseWriter, *http.Request, T` where T is the type you've passed in as t.
 func WithReturnType(t reflect.Type, f interface{}) WrapOption {
 	return func(wo *wrapOptions) {
 		wo.handlers[t] = reflect.ValueOf(f)
 	}
 }
 
+// WithContextWrapper allows you to replace the context for the request.
+// f is called just before the request gets handled, and the cancel function is called after the request is finished.
+// The cancel function may be nil.
 func WithContextWrapper(f func(ctx context.Context) (context.Context, func())) WrapOption {
 	return func(wo *wrapOptions) {
 		wo.contextWrappers = append(wo.contextWrappers, f)
@@ -58,7 +70,7 @@ func WithErrorHandler(f ErrorHandler) WrapOption {
 }
 
 // Wrap takes a request handler function and returns a http.HandlerFunc for use with net/http.
-// The requested handler is expected to take arguments like context.Context, *http.Request and return a convreq.HttpResponse or an error.
+// The given handler is expected to take arguments like context.Context, *http.Request and return a convreq.HttpResponse or an error.
 func Wrap(f interface{}, opts ...WrapOption) http.HandlerFunc {
 	t := reflect.TypeOf(f)
 	v := reflect.ValueOf(f)
