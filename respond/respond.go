@@ -53,8 +53,8 @@ func (h handlerResponse) Respond(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// RepondWithHandler creates a response that delegates to a regular http.Handler.
-func RepondWithHandler(h http.Handler) internal.HttpResponse {
+// Handler creates a response that delegates to a regular http.Handler.
+func Handler(h http.Handler) internal.HttpResponse {
 	return handlerResponse{h}
 }
 
