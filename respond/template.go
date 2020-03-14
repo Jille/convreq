@@ -19,7 +19,7 @@ type Template interface {
 func RenderTemplate(tpl Template, data interface{}) internal.HttpResponse {
 	var buf bytes.Buffer
 	if err := tpl.Execute(&buf, data); err != nil {
-		return InternalServerError(fmt.Errorf("failed to render template: %v", err))
+		return Error(fmt.Errorf("failed to render template: %v", err))
 	}
 	return Reader(&buf)
 }

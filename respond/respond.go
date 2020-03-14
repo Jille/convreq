@@ -24,22 +24,27 @@ func (e httpError) Respond(w http.ResponseWriter, r *http.Request) error {
 }
 
 // BadRequest creates a HTTP 400 Bad Request response.
-func BadRequest(err error) internal.HttpResponse {
-	return httpError{400, err.Error()}
+func BadRequest(msg string) internal.HttpResponse {
+	return httpError{400, msg}
 }
 
 // PermissionDenied creates a HTTP 403 Permission Denied response.
-func PermissionDenied(err error) internal.HttpResponse {
-	return httpError{403, err.Error()}
+func PermissionDenied(msg string) internal.HttpResponse {
+	return httpError{403, msg}
 }
 
 // NotFound creates a HTTP 404 Not Found response.
-func NotFound(err error) internal.HttpResponse {
-	return httpError{404, err.Error()}
+func NotFound(msg string) internal.HttpResponse {
+	return httpError{404, msg}
 }
 
 // InternalServerError creates a HTTP 500 Internal Server Error response.
-func InternalServerError(err error) internal.HttpResponse {
+func InternalServerError(msg string) internal.HttpResponse {
+	return httpError{500, msg}
+}
+
+// Error creates a HTTP 500 Internal Server Error response.
+func Error(err error) internal.HttpResponse {
 	return httpError{500, err.Error()}
 }
 

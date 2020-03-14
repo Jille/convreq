@@ -174,7 +174,7 @@ func createGet(t reflect.Type) func(w http.ResponseWriter, r *http.Request) (ref
 		// TODO(quis): Consider putting v in a sync.Pool.
 		v := reflect.New(t)
 		if err := internal.DecodeGet(r, v.Interface()); err != nil {
-			return reflect.Value{}, respond.BadRequest(err)
+			return reflect.Value{}, respond.BadRequest(err.Error())
 		}
 		return v.Elem(), nil
 	}
@@ -190,7 +190,7 @@ func createPost(pt reflect.Type) func(w http.ResponseWriter, r *http.Request) (r
 		// TODO(quis): Consider putting v in a sync.Pool.
 		v := reflect.New(t)
 		if err := internal.DecodePost(r, v.Interface()); err != nil {
-			return reflect.Value{}, respond.BadRequest(err)
+			return reflect.Value{}, respond.BadRequest(err.Error())
 		}
 		return v, nil
 	}
@@ -203,6 +203,6 @@ func handleVoid(w http.ResponseWriter, r *http.Request) {
 
 func handleError(w http.ResponseWriter, r *http.Request, err error) {
 	if err != nil {
-		internal.DoRespond(w, r, respond.InternalServerError(err))
+		internal.DoRespond(w, r, respond.Error(err))
 	}
 }

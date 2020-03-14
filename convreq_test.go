@@ -25,7 +25,7 @@ type ArticlesCategoryHandlerPost struct {
 
 func ArticlesCategoryHandler(ctx context.Context, r *http.Request, get ArticlesCategoryHandlerGet, post *ArticlesCategoryHandlerPost) convreq.HttpResponse {
 	if get.Category == "unimplemented" {
-		return respond.InternalServerError(fmt.Errorf("not yet implemented"))
+		return respond.InternalServerError("not yet implemented")
 	}
 	if post != nil {
 		return respond.String(fmt.Sprintf("I like post. NewName=%s", post.NewName))
@@ -92,7 +92,7 @@ func TestStuff(t *testing.T) {
 		{
 			req: httptest.NewRequest("GET", "/", nil),
 			handler: func() convreq.HttpResponse {
-				return respond.BadRequest(errors.New("test"))
+				return respond.BadRequest("test")
 			},
 			wantCode: 400,
 			wantBody: "test\n",
@@ -100,7 +100,7 @@ func TestStuff(t *testing.T) {
 		{
 			req: httptest.NewRequest("GET", "/", nil),
 			handler: func() convreq.HttpResponse {
-				return respond.PermissionDenied(errors.New("test"))
+				return respond.PermissionDenied("test")
 			},
 			wantCode: 403,
 			wantBody: "test\n",
@@ -108,7 +108,7 @@ func TestStuff(t *testing.T) {
 		{
 			req: httptest.NewRequest("GET", "/", nil),
 			handler: func() convreq.HttpResponse {
-				return respond.NotFound(errors.New("test"))
+				return respond.NotFound("test")
 			},
 			wantCode: 404,
 			wantBody: "test\n",
@@ -161,7 +161,7 @@ func TestStuff(t *testing.T) {
 			handler: func() convreq.HttpResponse {
 				t, err := template.New("test").Parse("{{.}} is a number")
 				if err != nil {
-					return respond.InternalServerError(err)
+					return respond.Error(err)
 				}
 				return respond.RenderTemplate(t, 7)
 			},
