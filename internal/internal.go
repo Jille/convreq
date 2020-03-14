@@ -10,7 +10,11 @@ import (
 	"github.com/gorilla/schema"
 )
 
-var decoder = schema.NewDecoder()
+var decoder = func() *schema.Decoder {
+	d := schema.NewDecoder()
+	d.IgnoreUnknownKeys(true)
+	return d
+}()
 
 // HttpResponse is what is to be returned from request handlers.
 // Respond gets executed to write the response to the client.
