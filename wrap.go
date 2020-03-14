@@ -38,9 +38,9 @@ func WithParameterType(t reflect.Type, e extractor) WrapOption {
 	}
 }
 
-func WithReturnType(t reflect.Type, f reflect.Value) WrapOption {
+func WithReturnType(t reflect.Type, f interface{}) WrapOption {
 	return func(wo *wrapOptions) {
-		wo.handlers[t] = f
+		wo.handlers[t] = reflect.ValueOf(f)
 	}
 }
 
