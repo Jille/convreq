@@ -14,7 +14,7 @@ func PanicHandler(hr *internal.HttpResponse) func() {
 	return func() {
 		if r := recover(); r != nil {
 			log.Printf("panic: %v\n%s", r, debug.Stack())
-			*hr = respond.InternalServerError(fmt.Errorf("panic: %v", r))
+			*hr = respond.Error(fmt.Errorf("panic: %v", r))
 		}
 	}
 }

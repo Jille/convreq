@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -40,7 +39,7 @@ type ArticlesCategoryHandlerPost struct {
 }
 
 func (s *server) ArticlesCategoryHandler(ctx context.Context, r *http.Request, get ArticlesCategoryHandlerGet, post *ArticlesCategoryHandlerPost) convreq.HttpResponse {
-	return respond.InternalServerError(fmt.Errorf("not yet implemented"))
+	return respond.InternalServerError("not yet implemented")
 }
 
 type ArticleHandlerGet struct {
@@ -54,5 +53,5 @@ type ArticleHandlerPost struct {
 }
 
 func ArticleHandler(ctx context.Context, r *http.Request, get ArticleHandlerGet, post *ArticleHandlerPost) convreq.HttpResponse {
-	return respond.InternalServerError(fmt.Errorf("also not yet implemented"))
+	return respond.InternalServerError("also not yet implemented")
 }
