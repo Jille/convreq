@@ -80,3 +80,7 @@ I'll implement a couple of basic responders:
 * Template rendering. This should be as easy as `return convreq.RenderTemplate(myTemplate, myData)`. This'll make it possible to automatically reload templates for development servers too.
 * Redirection is as easy as `return convreq.Redirect(302, "/home")`.
 * Setting response headers.
+
+# Footer
+
+This is not an officially supported Google product.
