@@ -16,6 +16,7 @@
 package respond
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -141,4 +142,9 @@ func (s respondString) Respond(w http.ResponseWriter, r *http.Request) error {
 // String creates a response that sends a string back to the client.
 func String(data string) internal.HttpResponse {
 	return respondString{data}
+}
+
+// Printf creates a response that sends a formatted string back to the client.
+func Printf(format string, v ...interface{}) internal.HttpResponse {
+	return respondString{fmt.Sprintf(format, v...)}
 }
