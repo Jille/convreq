@@ -42,9 +42,9 @@ var handlerMap = map[reflect.Type]reflect.Value{
 	reflect.TypeOf((*HttpResponse)(nil)).Elem(): reflect.ValueOf(internal.DoRespond),
 }
 
-type wrapOptions struct{
-	extractors map[reflect.Type]extractor
-	handlers map[reflect.Type]reflect.Value
+type wrapOptions struct {
+	extractors      map[reflect.Type]extractor
+	handlers        map[reflect.Type]reflect.Value
 	contextWrappers []func(ctx context.Context) (context.Context, func())
 }
 
@@ -91,7 +91,7 @@ func Wrap(f interface{}, opts ...WrapOption) http.HandlerFunc {
 
 	wo := wrapOptions{
 		extractors: map[reflect.Type]extractor{},
-		handlers: map[reflect.Type]reflect.Value{},
+		handlers:   map[reflect.Type]reflect.Value{},
 	}
 	for t, e := range extractorMap {
 		wo.extractors[t] = e

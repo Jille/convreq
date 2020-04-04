@@ -37,8 +37,8 @@ var (
 )
 
 type handler struct {
-	name          string
-	ontype        string
+	name   string
+	ontype string
 }
 
 func run() error {
@@ -50,7 +50,7 @@ func run() error {
 		}
 		for _, m := range defineRe.FindAllStringSubmatch(string(code), -1) {
 			handlers = append(handlers, handler{
-				name: m[2],
+				name:   m[2],
 				ontype: m[1],
 			})
 		}

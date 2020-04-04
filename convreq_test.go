@@ -18,11 +18,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"text/template"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"text/template"
 
 	"github.com/Jille/convreq"
 	"github.com/Jille/convreq/respond"
