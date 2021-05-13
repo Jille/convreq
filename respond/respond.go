@@ -17,7 +17,6 @@ package respond
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -126,25 +125,30 @@ func Redirect(code int, url string) internal.HttpResponse {
 	return redirect{code, url}
 }
 
-type respondString struct {
-	data string
+type respondBytes struct {
+	data []byte
 }
 
 // Respond implements convreq.HttpResponse.
-func (s respondString) Respond(w http.ResponseWriter, r *http.Request) error {
+func (b respondBytes) Respond(w http.ResponseWriter, r *http.Request) error {
 	if w.Header().Get("Content-Length") == "" {
-		w.Header().Set("Content-Length", strconv.Itoa(len(s.data)))
+		w.Header().Set("Content-Length", strconv.Itoa(len(b.data)))
 	}
-	_, err := io.WriteString(w, s.data)
+	_, err := w.Write(b.data)
 	return err
 }
 
 // String creates a response that sends a string back to the client.
 func String(data string) internal.HttpResponse {
-	return respondString{data}
+	return respondBytes{[]byte(data)}
+}
+
+// Bytes creates a response that sends bytes back to the client.
+func Bytes(data []byte) internal.HttpResponse {
+	return respondBytes{data}
 }
 
 // Printf creates a response that sends a formatted string back to the client.
 func Printf(format string, v ...interface{}) internal.HttpResponse {
-	return respondString{fmt.Sprintf(format, v...)}
+	return respondBytes{[]byte(fmt.Sprintf(format, v...))}
 }
