@@ -59,6 +59,8 @@ func (rr repondReader) Respond(w http.ResponseWriter, r *http.Request) error {
 }
 
 // Reader creates a response that copies everything from the reader to the client.
+// If the reader is also an io.Closer, r will be closed.
+// If the reader has a method Len() int, it will be sent as the Content-Length if that header isn't set yet.
 func Reader(r io.Reader) internal.HttpResponse {
 	return repondReader{r}
 }
