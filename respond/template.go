@@ -44,6 +44,9 @@ type repondReader struct {
 
 // Respond implements convreq.HttpResponse.
 func (rr repondReader) Respond(w http.ResponseWriter, r *http.Request) error {
+	if closer, ok := rr.r.(io.Closer); ok {
+		defer closer.Close()
+	}
 	if w.Header().Get("Content-Length") == "" {
 		if lenner, ok := rr.r.(interface{ Len() int }); ok {
 			w.Header().Set("Content-Length", strconv.Itoa(lenner.Len()))
@@ -51,9 +54,6 @@ func (rr repondReader) Respond(w http.ResponseWriter, r *http.Request) error {
 	}
 	if _, err := io.Copy(w, rr.r); err != nil {
 		return fmt.Errorf("failed to write response to client: %v", err)
-	}
-	if closer, ok := rr.r.(io.Closer); ok {
-		closer.Close()
 	}
 	return nil
 }
