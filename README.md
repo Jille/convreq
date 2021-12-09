@@ -28,14 +28,14 @@ type homePagePost struct {
 
 func homePageHandler(ctx context.Context, r *http.Request, get homePageGet, post *homePagePost) convreq.HttpResponse {
 	if get.Name == "" {
-		return respond.BadRequest(errors.New("Who are you?"))
+		return respond.BadRequest("Who are you?")
 	}
 	if post != nil && post.Password == "secret" {
 		return respond.Redirect(302, "/secrets/")
 	}
 	t, err := template.New("tpl").Parse("How do you do, {{.}}?")
 	if err != nil {
-		return respond.InternalServerError(err)
+		return respond.Error(err)
 	}
 	return respond.RenderTemplate(t, get.Name)
 }
