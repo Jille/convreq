@@ -38,12 +38,12 @@ func RenderTemplate(tpl Template, data interface{}) internal.HttpResponse {
 	return Reader(&buf)
 }
 
-type repondReader struct {
+type respondReader struct {
 	r io.Reader
 }
 
 // Respond implements convreq.HttpResponse.
-func (rr repondReader) Respond(w http.ResponseWriter, r *http.Request) error {
+func (rr respondReader) Respond(w http.ResponseWriter, r *http.Request) error {
 	if closer, ok := rr.r.(io.Closer); ok {
 		defer closer.Close()
 	}
@@ -62,5 +62,5 @@ func (rr repondReader) Respond(w http.ResponseWriter, r *http.Request) error {
 // If the reader is also an io.Closer, r will be closed.
 // If the reader has a method Len() int, it will be sent as the Content-Length if that header isn't set yet.
 func Reader(r io.Reader) internal.HttpResponse {
-	return repondReader{r}
+	return respondReader{r}
 }
