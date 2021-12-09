@@ -23,45 +23,6 @@ import (
 	"github.com/Jille/convreq/internal"
 )
 
-type httpError struct {
-	code int
-	msg  string
-}
-
-// Respond implements convreq.HttpResponse.
-func (e httpError) Respond(w http.ResponseWriter, r *http.Request) error {
-	if f, ok := r.Context().Value(internal.ErrorHandlerContextKey).(internal.ErrorHandler); ok {
-		return f(e.code, e.msg, r).Respond(w, r)
-	}
-	http.Error(w, e.msg, e.code)
-	return nil
-}
-
-// BadRequest creates a HTTP 400 Bad Request response.
-func BadRequest(msg string) internal.HttpResponse {
-	return httpError{400, msg}
-}
-
-// PermissionDenied creates a HTTP 403 Permission Denied response.
-func PermissionDenied(msg string) internal.HttpResponse {
-	return httpError{403, msg}
-}
-
-// NotFound creates a HTTP 404 Not Found response.
-func NotFound(msg string) internal.HttpResponse {
-	return httpError{404, msg}
-}
-
-// InternalServerError creates a HTTP 500 Internal Server Error response.
-func InternalServerError(msg string) internal.HttpResponse {
-	return httpError{500, msg}
-}
-
-// Error creates a HTTP 500 Internal Server Error response.
-func Error(err error) internal.HttpResponse {
-	return httpError{500, err.Error()}
-}
-
 type handlerResponse struct {
 	h http.Handler
 }
