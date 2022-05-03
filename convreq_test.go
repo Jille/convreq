@@ -15,9 +15,11 @@
 package convreq_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -69,6 +71,20 @@ func TestStuff(t *testing.T) {
 		},
 		{
 			req:      httptest.NewRequest("POST", "/?category=test&id=7", strings.NewReader("newname=dude")),
+			handler:  ArticlesCategoryHandler,
+			wantCode: 200,
+			wantBody: "I like post. NewName=dude",
+		},
+		{
+			req: func() *http.Request {
+				var buf bytes.Buffer
+				mp := multipart.NewWriter(&buf)
+				mp.WriteField("newname", "dude")
+				mp.Close()
+				req := httptest.NewRequest("POST", "/?category=test&id=7", &buf)
+				req.Header.Set("Content-Type", mp.FormDataContentType())
+				return req
+			}(),
 			handler:  ArticlesCategoryHandler,
 			wantCode: 200,
 			wantBody: "I like post. NewName=dude",

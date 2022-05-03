@@ -68,7 +68,7 @@ func DecodeGet(r *http.Request, ret interface{}) error {
 
 // DecodePost parses the POST parameters of the request into `ret` using github.com/gorilla/schema.
 func DecodePost(r *http.Request, ret interface{}) error {
-	if err := r.ParseForm(); err != nil {
+	if err := r.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart { // 32MB. The value comes from net/http.defaultMaxMemory.
 		return fmt.Errorf("failed to parse form input: %v", err)
 	}
 	if err := decoder.Decode(ret, r.PostForm); err != nil {
