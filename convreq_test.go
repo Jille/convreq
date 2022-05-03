@@ -114,7 +114,7 @@ func TestStuff(t *testing.T) {
 		{
 			req: httptest.NewRequest("GET", "/", nil),
 			handler: func() convreq.HttpResponse {
-				return respond.PermissionDenied("test")
+				return respond.Forbidden("test")
 			},
 			wantCode: 403,
 			wantBody: "test\n",
