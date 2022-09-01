@@ -50,8 +50,8 @@ func Accepted(msg string) internal.HttpResponse {
 }
 
 // NoContent creates a HTTP 204 No Content response.
-func NoContent(msg string) internal.HttpResponse {
-	return httpError{204, msg}
+func NoContent() internal.HttpResponse {
+	return httpError{204, ""}
 }
 
 // ResetContent creates a HTTP 205 Reset Content response.
