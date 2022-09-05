@@ -149,7 +149,7 @@ func UnprocessableEntity(msg string) internal.HttpResponse {
 	return httpError{422, msg}
 }
 
-// UnprocessableEntity creates a HTTP 424 Failed Dependency response.
+// FailedDependency creates a HTTP 424 Failed Dependency response.
 func FailedDependency(msg string) internal.HttpResponse {
 	return httpError{424, msg}
 }
