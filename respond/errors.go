@@ -50,7 +50,8 @@ func Accepted(msg string) internal.HttpResponse {
 }
 
 // NoContent creates a HTTP 204 No Content response.
-func NoContent() internal.HttpResponse {
+// The param ignored exists to provide backwards compatibility with an old bug that accepted a message.
+func NoContent(ignored ...string) internal.HttpResponse {
 	return httpError{204, ""}
 }
 
