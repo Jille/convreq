@@ -13,7 +13,9 @@ type respondJSON struct {
 
 // Respond implements convreq.HttpResponse.
 func (rj respondJSON) Respond(w http.ResponseWriter, r *http.Request) error {
-	w.Header().Set("Content-Type", "application/json")
+	if w.Header.Get("Content-Type") == "" {
+		w.Header().Set("Content-Type", "application/json")
+	}
 	return json.NewEncoder(w).Encode(rj.data)
 }
 
