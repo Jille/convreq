@@ -19,7 +19,13 @@ func (rj respondJSON) Respond(w http.ResponseWriter, r *http.Request) error {
 	return json.NewEncoder(w).Encode(rj.data)
 }
 
-// ServeJSON uses json.Marshal() to serve a JSON object.
-func ServeJSON(data interface{}) internal.HttpResponse {
+// JSON marshals the given data and sends it to the requester.
+func JSON(data interface{}) internal.HttpResponse {
 	return respondJSON{data}
+}
+
+// ServeJSON marshals the given data and sends it to the requester.
+// Deprecated: Use JSON() instead.
+func ServeJSON(data interface{}) internal.HttpResponse {
+	return JSON(data)
 }
