@@ -15,6 +15,7 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -73,6 +74,15 @@ func DecodePost(r *http.Request, ret interface{}) error {
 	}
 	if err := decoder.Decode(ret, r.PostForm); err != nil {
 		return fmt.Errorf("failed to parse form input: %v", err)
+	}
+	return nil
+}
+
+// DecodeJSON parses the request body into `ret` as JSON.
+func DecodeJSON(r *http.Request, ret interface{}) error {
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(ret); err != nil {
+		return fmt.Errorf("failed to decode json body: %v", err)
 	}
 	return nil
 }

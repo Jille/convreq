@@ -49,6 +49,25 @@ func ArticlesCategoryHandler(ctx context.Context, r *http.Request, get ArticlesC
 	return respond.String(fmt.Sprintf("Hello world. Id=%d", get.Id))
 }
 
+type JasonCategoryHandlerJSON struct {
+	Category string `json:"category"`
+	NewName  string `json:"newname"`
+}
+
+func JasonCategoryHandler(ctx context.Context, r *http.Request, input JasonCategoryHandlerJSON) convreq.HttpResponse {
+	if input.Category == "unimplemented" {
+		return respond.InternalServerError("not yet implemented")
+	}
+	return respond.String(fmt.Sprintf("I like JSON. NewName=%s", input.NewName))
+}
+
+func JasonPtrCategoryHandler(ctx context.Context, r *http.Request, input *JasonCategoryHandlerJSON) convreq.HttpResponse {
+	if input.Category == "unimplemented" {
+		return respond.InternalServerError("not yet implemented")
+	}
+	return respond.String(fmt.Sprintf("I like JSON. NewName=%s", input.NewName))
+}
+
 func TestStuff(t *testing.T) {
 	tests := []struct {
 		req         *http.Request
@@ -197,6 +216,42 @@ func TestStuff(t *testing.T) {
 			},
 			wantCode: 200,
 			wantBody: "7 is a number",
+		},
+		{
+			req:      httptest.NewRequest("POST", "/", strings.NewReader(`{"category": "unimplemented", "id": 1}`)),
+			handler:  JasonCategoryHandler,
+			wantCode: 500,
+			wantBody: "not yet implemented\n",
+		},
+		{
+			req:      httptest.NewRequest("POST", "/", strings.NewReader(`{"category": "unimplemented", "id": 1}`)),
+			handler:  JasonPtrCategoryHandler,
+			wantCode: 500,
+			wantBody: "not yet implemented\n",
+		},
+		{
+			req:      httptest.NewRequest("POST", "/", strings.NewReader(`{"category": "test", "newname": "dude"}`)),
+			handler:  JasonCategoryHandler,
+			wantCode: 200,
+			wantBody: "I like JSON. NewName=dude",
+		},
+		{
+			req:      httptest.NewRequest("POST", "/", strings.NewReader(`{"category": "test", "newname": "dude"}`)),
+			handler:  JasonPtrCategoryHandler,
+			wantCode: 200,
+			wantBody: "I like JSON. NewName=dude",
+		},
+		{
+			req:      httptest.NewRequest("POST", "/", nil),
+			handler:  JasonCategoryHandler,
+			wantCode: 400,
+			wantBody: "failed to decode json body: EOF\n",
+		},
+		{
+			req:      httptest.NewRequest("POST", "/", strings.NewReader(`bad json`)),
+			handler:  JasonPtrCategoryHandler,
+			wantCode: 400,
+			wantBody: "failed to decode json body: invalid character 'b' looking for beginning of value\n",
 		},
 	}
 

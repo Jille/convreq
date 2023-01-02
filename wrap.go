@@ -113,9 +113,13 @@ func Wrap(f interface{}, opts ...WrapOption) http.HandlerFunc {
 		if e, ok := wo.extractors[t.In(i)]; ok {
 			ins[i] = e
 		} else if strings.HasSuffix(t.In(i).Name(), "Get") {
-			ins[i] = createGet(t.In(i))
+			ins[i] = createGetInput(t.In(i))
 		} else if t.In(i).Kind() == reflect.Ptr && strings.HasSuffix(t.In(i).Elem().Name(), "Post") {
-			ins[i] = createPost(t.In(i))
+			ins[i] = createPostInput(t.In(i))
+		} else if t.In(i).Kind() == reflect.Ptr && strings.HasSuffix(t.In(i).Elem().Name(), "JSON") {
+			ins[i] = createJSONInput(t.In(i), true)
+		} else if strings.HasSuffix(t.In(i).Name(), "JSON") {
+			ins[i] = createJSONInput(t.In(i), false)
 		}
 		if ins[i] == nil {
 			panic(fmt.Errorf("convreq: %s: don't know how to produce %s", v.String(), t.In(i).String()))
@@ -183,7 +187,7 @@ func getResponseWriter(w http.ResponseWriter, r *http.Request) (reflect.Value, H
 	return reflect.ValueOf(w), nil
 }
 
-func createGet(t reflect.Type) func(w http.ResponseWriter, r *http.Request) (reflect.Value, HttpResponse) {
+func createGetInput(t reflect.Type) func(w http.ResponseWriter, r *http.Request) (reflect.Value, HttpResponse) {
 	return func(w http.ResponseWriter, r *http.Request) (reflect.Value, HttpResponse) {
 		// TODO(quis): Consider putting v in a sync.Pool.
 		v := reflect.New(t)
@@ -194,7 +198,7 @@ func createGet(t reflect.Type) func(w http.ResponseWriter, r *http.Request) (ref
 	}
 }
 
-func createPost(pt reflect.Type) func(w http.ResponseWriter, r *http.Request) (reflect.Value, HttpResponse) {
+func createPostInput(pt reflect.Type) func(w http.ResponseWriter, r *http.Request) (reflect.Value, HttpResponse) {
 	nilptr := reflect.New(pt).Elem()
 	t := pt.Elem()
 	return func(w http.ResponseWriter, r *http.Request) (reflect.Value, HttpResponse) {
@@ -207,6 +211,23 @@ func createPost(pt reflect.Type) func(w http.ResponseWriter, r *http.Request) (r
 			return reflect.Value{}, respond.BadRequest(err.Error())
 		}
 		return v, nil
+	}
+}
+
+func createJSONInput(pt reflect.Type, isPtr bool) func(w http.ResponseWriter, r *http.Request) (reflect.Value, HttpResponse) {
+	t := pt
+	if isPtr {
+		t = pt.Elem()
+	}
+	return func(w http.ResponseWriter, r *http.Request) (reflect.Value, HttpResponse) {
+		v := reflect.New(t)
+		if err := internal.DecodeJSON(r, v.Interface()); err != nil {
+			return reflect.Value{}, respond.BadRequest(err.Error())
+		}
+		if isPtr {
+			return v, nil
+		}
+		return v.Elem(), nil
 	}
 }
 
