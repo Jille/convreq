@@ -80,6 +80,13 @@ func DecodePost(r *http.Request, ret interface{}) error {
 
 // DecodeJSON parses the request body into `ret` as JSON.
 func DecodeJSON(r *http.Request, ret interface{}) error {
+	switch r.Header.Get("Content-Type") {
+	case "text/json", "application/json":
+	case "":
+		return fmt.Errorf("expected Content-Type: text/json rather than unset")
+	default:
+		return fmt.Errorf("expected Content-Type: text/json rather than %q", r.Header.Get("Content-Type"))
+	}
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(ret); err != nil {
 		return fmt.Errorf("failed to decode json body: %v", err)
